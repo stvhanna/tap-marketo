@@ -64,6 +64,14 @@ def format_value(value, schema):
     elif schema.get("format") == "date-time":
         return pendulum.parse(value).isoformat()
     elif "integer" in field_type:
+        if isinstance(value, int):
+            return value
+
+        # Custom Marketo percent type fields can have decimals, so we drop them
+        decimal_index = value.find('.')
+        if decimal_index > 0:
+            singer.log_warning("Dropping decimal from integer type. Original Value: %s", value)
+            value = value[:decimal_index]
         return int(value)
     elif "string" in field_type:
         return str(value)
